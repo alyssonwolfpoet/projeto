@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 5 && ollama pull llama3.2 && ollama pull nomic-embed-text && wait"]
+
+  postgres:
+    image: postgres:17.2  # Última versão
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: llm_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    command: >
+      bash -c "apt-get update && apt-get install -y postgresql-17-pgvector &&
+               docker-entrypoint.sh postgres"
+
+  # app:
+  #   build:
+  #     context: ..
+  #     dockerfile: docker/Dockerfile
+  #   container_name: langchain_app
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - ollama
+  #     - postgres
+  #   volumes:
+  #     - ..:/app
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:admin@postgres:5432/llm_db
+  #     - OLLAMA_URL=http://ollama:11434
+  #   command: ["python", "-m", "app.main"]
+
+  # frontend:
+  #   build:
+  #     context: ..
+  #     dockerfile: frontend/Dockerfile
+  #   container_name: streamlit_ui
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8501:8501"
+  #   depends_on:
+  #     - app
+  #   environment:
+  #     - API_URL=http://app:8000
+
+volumes:
+  ollama_data:
+  pg_data:
