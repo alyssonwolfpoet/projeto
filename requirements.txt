@@ -8,3 +8,29 @@ python-dotenv
 langchain-ollama
 python-multipart
 langchain-community
+
+# Backend
+fastapi
+uvicorn
+python-multipart
+pydantic-settings
+
+# LangChain e Embeddings
+langchain
+langchain-community
+langchain-ollama
+
+# Processamento de Documentos
+unstructured
+python-docx
+openpyxl
+pikepdf
+pytesseract
+Pillow
+
+# Banco de Dados
+pgvector
+psycopg2-binary
+
+# Outros
+uuid
