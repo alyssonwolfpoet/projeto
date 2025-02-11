@@ -7,19 +7,14 @@ class Settings(BaseSettings):
     COLLECTION_NAME: str = "rag_documents"
     
     # Modelos
-    EMBEDDING_MODEL: str = "nomic-embed-text"
+    EMBEDDING_MODEL: str = "llama3.2"
     LLM_MODEL: str = "llama3.2"
     
     # Configurações de segurança
     SECRET_KEY: str = "sua-chave-secreta"
     
-    # Configurações de upload
-    UPLOAD_FOLDER: str = "/tmp/uploads"
-    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10 MB
-    
     class Config:
         env_file = ".env"
-        env_file_encoding = "utf-8"
 
 @lru_cache()
 def get_settings():
