@@ -1,38 +1,8 @@
-# Dependências principais
-numpy
 fastapi
 uvicorn
-pydantic
-pydantic-settings
-
-# LangChain e integrações
-langchain
-langchain-community
-langchain-ollama
-
-# Processamento de documentos
-python-multipart
-python-jose
-python-dotenv
-
-# Banco de dados e vetorização
 sqlalchemy
-psycopg2-binary
-pgvector
-
-# Processamento de documentos
-unstructured
-pytesseract
-Pillow
-
-# Processamento de texto
-transformers
-sentence-transformers
-
-# Utilitários
-uuid
-typing-extensions
-
-# Desenvolvimento e testes
-pytest
-httpx
+psycopg2
+requests
+langchain
+python-dotenv
+PyMuPDF

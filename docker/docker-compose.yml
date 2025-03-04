@@ -27,34 +27,34 @@ services:
       bash -c "apt-get update && apt-get install -y postgresql-17-pgvector &&
                docker-entrypoint.sh postgres"
 
-  # app:
-  #   build:
-  #     context: ..
-  #     dockerfile: docker/Dockerfile
-  #   container_name: langchain_app
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - ollama
-  #     - postgres
-  #   volumes:
-  #     - ..:/app
-  #   environment:
-  #     - DATABASE_URL=postgresql://admin:admin@postgres:5432/llm_db
-  #     - OLLAMA_URL=http://ollama:11434
-  #   command: ["python", "-m", "app.main"]
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: langchain_app
+    restart: unless-stopped
+    depends_on:
+      - ollama
+      - postgres
+    volumes:
+      - ..:/app
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@postgres:5432/llm_db
+      - OLLAMA_URL=http://ollama:11434
+    command: ["python", "-m", "app.main"]
 
-  # frontend:
-  #   build:
-  #     context: ..
-  #     dockerfile: frontend/Dockerfile
-  #   container_name: streamlit_ui
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8501:8501"
-  #   depends_on:
-  #     - app
-  #   environment:
-  #     - API_URL=http://app:8000
+  frontend:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    container_name: streamlit_ui
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    depends_on:
+      - app
+    environment:
+      - API_URL=http://app:8000
 
 volumes:
   ollama_data:

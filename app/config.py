@@ -1,26 +1,13 @@
-from functools import lru_cache
-from pydantic_settings import BaseSettings
+# app/config.py
 
-class Settings(BaseSettings):
-    # Configurações do banco de dados
-    DATABASE_URL: str = "postgresql://admin:admin@localhost:5432/llm_db"
-    COLLECTION_NAME: str = "rag_documents"
-    
-    # Modelos
-    EMBEDDING_MODEL: str = "nomic-embed-text"
-    LLM_MODEL: str = "llama3.2"
-    
-    # Configurações de segurança
-    SECRET_KEY: str = "sua-chave-secreta"
-    
-    # Configurações de upload
-    UPLOAD_FOLDER: str = "/tmp/uploads"
-    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10 MB
-    
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+import os
+from dotenv import load_dotenv
 
-@lru_cache()
-def get_settings():
-    return Settings()
+load_dotenv()
+
+OLLAMA_URL = os.getenv("OLLAMA_URL")
+LLAMA_MODEL = os.getenv("LLAMA_MODEL")
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+DATABASE_URL = os.getenv("DATABASE_URL")

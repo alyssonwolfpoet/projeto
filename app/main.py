@@ -1,62 +1,53 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+# app/main.py
 
-# Importar rotas
-from routes.document_routes import document_router
-from routes.chat_routes import chat_router
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
+from sqlalchemy.orm import Session
+from app.database import SessionLocal, init_db
+from app.services.retrieval_service import RetrievalService
 
-# Configuração do aplicativo
-app = FastAPI(
-    title="RAG Multimodal Backend",
-    description="Backend para processamento de documentos e chat com IA",
-    version="0.1.0"
-)
+# Inicializa o banco de dados
+init_db()
 
-#
-# Configuração de CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Permitir todas as origens em ambiente de desenvolvimento
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI()
 
-# Incluir roteadores
-app.include_router(document_router)
-app.include_router(chat_router)
+# Função para obter a sessão do banco de dados
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# Rota de status
-@app.get("/status")
-async def check_status():
-    """Rota de verificação de status do serviço"""
-    return {
-        "status": "Serviço RAG está operacional",
-        "version": "0.1.0"
-    }
+@app.post("/documents/pdf/")
+async def upload_pdf(pdf_file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Faz upload de um PDF, extrai o texto e armazena no banco de dados com seu embedding"""
+    pdf_content = await pdf_file.read()  # Lê o conteúdo do arquivo PDF
+    retrieval_service = RetrievalService(db)
+    
+    # Processa o PDF e armazena
+    document = retrieval_service.process_pdf(pdf_content)
+    
+    return {"id": document.id, "content": document.content}
 
-# Tratamento de exceções personalizadas
-from fastapi.exceptions import RequestValidationError
-from starlette.responses import JSONResponse
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+@app.get("/documents/{document_id}")
+def get_document(document_id: int, db: Session = Depends(get_db)):
+    """Recuperar um documento pelo ID"""
+    retrieval_service = RetrievalService(db)
+    document = retrieval_service.get_document_by_id(document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return {"id": document.id, "content": document.content}
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
-    """Tratamento personalizado para erros de validação"""
-    return JSONResponse(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "error": "Erro de validação",
-            "details": exc.errors()
-        }
-    )
+@app.get("/documents/")
+def get_documents(db: Session = Depends(get_db)):
+    """Recuperar todos os documentos armazenados"""
+    retrieval_service = RetrievalService(db)
+    documents = retrieval_service.retrieve_documents()
+    return [{"id": doc.id, "content": doc.content} for doc in documents]
 
-# Configuração de inicialização
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "main:app", 
-        host="0.0.0.0", 
-        port=8000, 
-        reload=True
-    )
+@app.post("/chat/")
+def chat_with_model(user_input: str, db: Session = Depends(get_db)):
+    """Interagir com o modelo e manter o contexto na memória"""
+    retrieval_service = RetrievalService(db)
+    response = retrieval_service.process_user_input(user_input)
+    return {"response": response}
